@@ -1,0 +1,48 @@
+/*src/app/globals.css*/
+@import "tailwindcss";
+
+/* ── Tokens de diseño ─────────────────────────────── */
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* Azul corporativo */
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #2563eb;
+  --color-brand-600: #1d4ed8;
+  --color-brand-700: #1e40af;
+  --color-brand-800: #1e3a8a;
+  --color-brand-900: #0b1f3a;
+  --color-brand-950: #06142a;
+
+  /* Colores semánticos para compra/venta */
+  --color-buy: #16a34a;
+  --color-sell: #dc2626;
+
+  /* Superficies */
+  --color-surface: #ffffff;
+  --color-surface-muted: #f8fafc;
+  --color-border-subtle: #e2e8f0;
+  --color-ink: #0f172a;
+  --color-ink-muted: #64748b;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-surface-muted);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Números alineados en columnas (tasas) */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}

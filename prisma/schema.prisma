@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ── Usuarios y sesiones ─────────────────────────────
+
+model User {
+  id             String    @id @default(cuid())
+  username       String    @unique
+  name           String
+  passwordHash   String
+  role           String    @default("ADMIN") // ADMIN | OPERATOR
+  isActive       Boolean   @default(true)
+  failedAttempts Int       @default(0)
+  lockedUntil    DateTime?
+  lastLoginAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  sessions    Session[]
+  rateChanges RateHistory[]
+
+  @@map("users")
+}
+
+model Session {
+  id         String   @id @default(cuid())
+  tokenHash  String   @unique
+  userId     String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime @default(now())
+  ipAddress  String?
+  userAgent  String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+// ── Monedas y tasas ─────────────────────────────────
+
+model Currency {
+  id             String   @id @default(cuid())
+  code           String   @unique
+  name           String
+  symbol         String?
+  flagCode       String? // ISO 3166-1 alpha-2 en minúsculas: "us", "eu", "gb"
+  buyRate        Decimal
+  sellRate       Decimal
+  displayOrder   Int      @default(0)
+  isActive       Boolean  @default(true)
+  ratesUpdatedAt DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  history RateHistory[]
+
+  @@index([isActive, displayOrder])
+  @@map("currencies")
+}
+
+model RateHistory {
+  id               String   @id @default(cuid())
+  currencyId       String
+  currencyCode     String // copia, por si la moneda cambia de código
+  previousBuyRate  Decimal?
+  previousSellRate Decimal?
+  newBuyRate       Decimal
+  newSellRate      Decimal
+  changedAt        DateTime @default(now())
+  changedById      String?
+  changedByName    String // copia del usuario que hizo el cambio
+
+  currency  Currency @relation(fields: [currencyId], references: [id], onDelete: Restrict)
+  changedBy User?    @relation(fields: [changedById], references: [id], onDelete: SetNull)
+
+  @@index([currencyId, changedAt])
+  @@index([changedAt])
+  @@map("rate_history")
+}
+
+// ── Configuración de la compañía (un solo registro) ─
+
+model CompanySetting {
+  id             String   @id @default("singleton")
+  companyName    String   @default("Casa de Cambio")
+  logoPath       String?
+  footerNote     String?
+  refreshSeconds Int      @default(30)
+  updatedAt      DateTime @updatedAt
+
+  @@map("company_settings")
+}

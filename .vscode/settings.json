@@ -1,0 +1,7 @@
+//.vscode/settings.json
+{
+  "css.lint.unknownAtRules": "ignore",
+  "files.associations": {
+    "*.css": "tailwindcss"
+  }
+}
