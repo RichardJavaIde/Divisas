@@ -29,7 +29,7 @@ export const navGroups: NavGroup[] = [
   {
     items: [
       { href: "/admin", label: "Panel", icon: LayoutDashboard, exact: true },
-      { href: "/admin/currencies", label: "Monedas", icon: Coins },
+      { href: "/admin/currencies", label: "Monedas", icon: Coins, roles: ["ADMIN"] },
       { href: "/admin/rates", label: "Tasas", icon: ArrowLeftRight },
       { href: "/admin/history", label: "Historial", icon: HistoryIcon },
     ],
