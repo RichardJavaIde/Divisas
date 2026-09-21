@@ -38,17 +38,27 @@ export async function create(
 }
 
 export async function list(
-  params: { currencyId?: string; page?: number; pageSize?: number } = {},
+   params: {
+    currencyId?: string;
+    since?: Date;
+    page?: number;
+    pageSize?: number;
+  } = {},
   db: DbClient = prisma,
 ): Promise<Paginated<RateHistoryRecord>> {
   const page = Math.max(1, params.page ?? 1);
   const pageSize = Math.min(100, Math.max(1, params.pageSize ?? 25));
-  const where = params.currencyId ? { currencyId: params.currencyId } : {};
+
+  const where = {
+    ...(params.currencyId ? { currencyId: params.currencyId } : {}),
+    ...(params.since ? { changedAt: { gte: params.since } } : {}),
+  };
 
   const [rows, total] = await Promise.all([
     db.rateHistory.findMany({
       where,
-      orderBy: { changedAt: "desc" },
+      // El id desempata cambios guardados en el mismo instante
+      orderBy: [{ changedAt: "desc" }, { id: "desc" }],
       skip: (page - 1) * pageSize,
       take: pageSize,
     }),

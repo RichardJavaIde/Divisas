@@ -35,3 +35,11 @@ export function formatRelativeTime(date: Date, now: Date = new Date()): string {
   }
   return formatter.format(0, "second");
 }
+/** "+12,5 %" → se muestra como "+12,5%". */
+export function formatPercentChange(value: number): string {
+  const formatted = new Intl.NumberFormat(siteConfig.locale, {
+    maximumFractionDigits: 1,
+    signDisplay: "exceptZero",
+  }).format(value);
+  return `${formatted}%`;
+}

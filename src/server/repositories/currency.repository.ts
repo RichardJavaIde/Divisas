@@ -142,3 +142,20 @@ export async function reorder(orderedIds: string[]): Promise<void> {
     ),
   );
 }
+/**
+ * Cambia las tasas solo si nadie las modificó desde que se cargó la pantalla.
+ * Devuelve false si la versión ya no coincide (conflicto).
+ */
+export async function updateRatesIfUnchanged(
+  id: string,
+  expectedUpdatedAt: Date,
+  buyRate: number,
+  sellRate: number,
+  db: DbClient = prisma,
+): Promise<boolean> {
+  const result = await db.currency.updateMany({
+    where: { id, ratesUpdatedAt: expectedUpdatedAt },
+    data: { buyRate, sellRate, ratesUpdatedAt: new Date() },
+  });
+  return result.count === 1;
+}
