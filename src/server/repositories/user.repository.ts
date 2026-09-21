@@ -120,16 +120,15 @@ export async function registerLoginSuccess(
 }
 
 export async function registerLoginFailure(
-  id: string,
+ id: string,
   lockUntil: Date | null,
   db: DbClient = prisma,
 ): Promise<void> {
   await db.user.update({
     where: { id },
-    data: {
-      failedAttempts: { increment: 1 },
-      ...(lockUntil && { lockedUntil: lockUntil }),
-    },
+    data: lockUntil
+      ? { failedAttempts: 0, lockedUntil: lockUntil }
+      : { failedAttempts: { increment: 1 } },
   });
 }
 
