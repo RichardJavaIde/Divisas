@@ -17,6 +17,10 @@ function resolveTimeZone(): string | undefined {
 
 const TIME_ZONE = resolveTimeZone();
 
+export function getAppTimeZone(): string | undefined {
+  return TIME_ZONE;
+}
+
 export function formatAppDateTime(date: Date): string {
   return formatDateTime(date, TIME_ZONE);
 }
