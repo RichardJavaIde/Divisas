@@ -6,6 +6,11 @@ import { cn } from "@/lib/utils";
 type Variant = "primary" | "secondary" | "ghost" | "danger";
 type Size = "sm" | "md" | "lg";
 
+const base =
+  "inline-flex cursor-pointer items-center justify-center rounded-lg font-medium transition-colors " +
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 " +
+  "disabled:cursor-not-allowed disabled:opacity-60";
+
 const variants: Record<Variant, string> = {
   primary: "bg-brand-500 text-white hover:bg-brand-600",
   secondary: "border border-border-subtle bg-surface text-ink hover:bg-surface-muted",
@@ -18,6 +23,15 @@ const sizes: Record<Size, string> = {
   md: "h-11 gap-2 px-4 text-sm",
   lg: "h-12 gap-2 px-6 text-base",
 };
+
+/** Clases de botón reutilizables (por ejemplo, para un <Link>). */
+export function buttonClasses({
+  variant = "primary",
+  size = "md",
+  className,
+}: { variant?: Variant; size?: Size; className?: string } = {}) {
+  return cn(base, variants[variant], sizes[size], className);
+}
 
 type ButtonProps = ComponentProps<"button"> & {
   variant?: Variant;
@@ -39,14 +53,7 @@ export function Button({
     <button
       type={type}
       disabled={disabled || loading}
-      className={cn(
-        "inline-flex cursor-pointer items-center justify-center rounded-lg font-medium transition-colors",
-        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500",
-        "disabled:cursor-not-allowed disabled:opacity-60",
-        variants[variant],
-        sizes[size],
-        className,
-      )}
+      className={buttonClasses({ variant, size, className })}
       {...props}
     >
       {loading && <LoaderCircle className="size-4 animate-spin" aria-hidden />}

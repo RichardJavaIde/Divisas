@@ -57,3 +57,9 @@ export async function list(
 
   return { items: rows.map(toRecord), total, page, pageSize };
 }
+export async function countSince(
+  since: Date,
+  db: DbClient = prisma,
+): Promise<number> {
+  return db.rateHistory.count({ where: { changedAt: { gte: since } } });
+}
