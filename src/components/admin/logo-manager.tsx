@@ -41,11 +41,20 @@ export function LogoManager({
   const [localPreview, setLocalPreview] = useState<string | null>(null);
   const [pickError, setPickError] = useState<string | null>(null);
 
-  // Tras subir o quitar el logo, se refrescan los datos del servidor (hasLogo, versión)
+  // Ajuste de estado durante el render (no dentro de un efecto): en cuanto
+  // uploadState.success cambia, se limpia la vista previa local en el mismo ciclo.
+  const [handledSuccess, setHandledSuccess] = useState(uploadState.success);
+  if (uploadState.success !== handledSuccess) {
+    setHandledSuccess(uploadState.success);
+    if (uploadState.success) setLocalPreview(null);
+  }
+
+  // Efectos imperativos de verdad (no cambian estado): refrescar los datos del
+  // servidor y limpiar el <input type="file">. La URL local ya se revoca sola
+  // en el efecto de abajo cuando localPreview pasa a null.
   useEffect(() => {
     if (uploadState.success) {
       router.refresh();
-      setLocalPreview(null);
       fileInputRef.current?.reset();
     }
   }, [uploadState.success, router]);
