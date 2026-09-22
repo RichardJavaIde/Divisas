@@ -92,7 +92,8 @@ model RateHistory {
 model CompanySetting {
   id             String   @id @default("singleton")
   companyName    String   @default("Casa de Cambio")
-  logoPath       String?
+  logoData       Bytes?
+  logoMimeType   String?
   footerNote     String?
   refreshSeconds Int      @default(30)
   updatedAt      DateTime @updatedAt

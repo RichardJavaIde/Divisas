@@ -21,7 +21,7 @@ export async function getDisplayData(): Promise<DisplayData> {
   return {
     companyName: settings.companyName,
     // La ruta /api/logo se crea en la Etapa 8. Sin logo configurado es null.
-    logoUrl: settings.logoPath ? `/api/logo?v=${settings.updatedAt.getTime()}` : null,
+    logoUrl: settings.hasLogo ? `/api/logo?v=${settings.updatedAt.getTime()}` : null,
     footerNote: settings.footerNote,
     refreshSeconds: clampRefreshSeconds(settings.refreshSeconds),
     timeZone: getAppTimeZone() ?? null,

@@ -55,10 +55,16 @@ export interface RateHistoryRecord {
 
 export interface CompanySettingsRecord {
   companyName: string;
-  logoPath: string | null;
   footerNote: string | null;
   refreshSeconds: number;
+  /** No incluye los bytes del logo: solo si existe uno. Los bytes se piden aparte (ver LogoRecord). */
+  hasLogo: boolean;
   updatedAt: Date;
+}
+
+export interface LogoRecord {
+  data: Buffer;
+  mimeType: string;
 }
 
 export interface Paginated<T> {

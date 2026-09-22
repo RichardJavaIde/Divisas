@@ -334,7 +334,7 @@ Abre `http://localhost:3000/` (pantalla pública) y `http://localhost:3000/login
 | `npm run lint` | Revisión de código |
 | `npm run db:migrate` | Crea/aplica migraciones en desarrollo |
 | `npm run db:seed` | Datos iniciales (seguro de repetir: no duplica ni sobrescribe) |
-| `npm run db:studio` | Explorador visual de la base en `http://localhost:5555` |
+| `npm run db:studio` | Explorador visual de la base en `http://localhost:5555` PRISMA STUDIO|
 | `npm run db:reset` | Borra y recrea la base (**destruye los datos**) |
 
 ### Datos iniciales (seed)
