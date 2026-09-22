@@ -1,6 +1,6 @@
 //src/server/services/display.service.ts
 import "server-only";
-import { clampRefreshSeconds, type DisplayData } from "@/lib/display";
+import {   clampRowsPerPage,clampRotationSeconds,clampRefreshSeconds, type DisplayData } from "@/lib/display";
 import { formatRate } from "@/lib/format";
 import { formatAppDateTime, getAppTimeZone } from "@/server/format";
 import { currencyRepository, settingsRepository } from "@/server/repositories";
@@ -10,6 +10,7 @@ export async function getDisplayData(): Promise<DisplayData> {
   const [settings, currencies] = await Promise.all([
     settingsRepository.get(),
     currencyRepository.listActive(),
+    
   ]);
 
   const lastUpdate = currencies.reduce<Date | null>(
@@ -22,8 +23,10 @@ export async function getDisplayData(): Promise<DisplayData> {
     companyName: settings.companyName,
     // La ruta /api/logo se crea en la Etapa 8. Sin logo configurado es null.
     logoUrl: settings.hasLogo ? `/api/logo?v=${settings.updatedAt.getTime()}` : null,
-    footerNote: settings.footerNote,
+    footerNote: settings.footerNote,   
     refreshSeconds: clampRefreshSeconds(settings.refreshSeconds),
+    rowsPerPage: clampRowsPerPage(settings.rowsPerPage),
+    rotationSeconds: clampRotationSeconds(settings.rotationSeconds),
     timeZone: getAppTimeZone() ?? null,
     ratesUpdatedText: lastUpdate ? formatAppDateTime(lastUpdate) : null,
     generatedAt: new Date().toISOString(),

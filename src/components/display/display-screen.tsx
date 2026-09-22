@@ -3,12 +3,7 @@
 
 import { useEffect } from "react";
 import { Maximize, Minimize, WifiOff } from "lucide-react";
-import {
-  PAGE_ROTATION_SECONDS,
-  getRowMetrics,
-  paginate,
-  type DisplayData,
-} from "@/lib/display";
+import { getRowMetrics, paginate, type DisplayData,} from "@/lib/display";
 import { cn } from "@/lib/utils";
 import { Clock } from "./clock";
 import { ROW_GRID_STYLE, u } from "./layout";
@@ -24,8 +19,8 @@ export function DisplayScreen({ initialData }: { initialData: DisplayData }) {
   const toggleFullscreen = fullscreen.toggle;
   useWakeLock();
 
-  const { pageCount, perPage } = paginate(data.currencies.length);
-  const page = useRotation(pageCount, PAGE_ROTATION_SECONDS);
+  const { pageCount, perPage } = paginate(data.currencies.length, data.rowsPerPage);
+  const page = useRotation(pageCount, data.rotationSeconds);
   const visible = data.currencies.slice(page * perPage, (page + 1) * perPage);
 
   // El tamaño del número se calcula con el valor más largo de TODAS las páginas,

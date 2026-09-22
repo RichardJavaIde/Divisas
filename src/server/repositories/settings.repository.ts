@@ -10,6 +10,8 @@ const SETTINGS_SELECT = {
   companyName: true,
   footerNote: true,
   refreshSeconds: true,
+  rowsPerPage: true,
+  rotationSeconds: true,
   logoMimeType: true,
   updatedAt: true,
 } as const;
@@ -18,6 +20,8 @@ type SettingsRow = {
   companyName: string;
   footerNote: string | null;
   refreshSeconds: number;
+  rowsPerPage: number;
+  rotationSeconds: number;
   logoMimeType: string | null;
   updatedAt: Date;
 };
@@ -27,6 +31,8 @@ function toRecord(row: SettingsRow): CompanySettingsRecord {
     companyName: row.companyName,
     footerNote: row.footerNote,
     refreshSeconds: row.refreshSeconds,
+    rowsPerPage: row.rowsPerPage,
+    rotationSeconds: row.rotationSeconds,
     hasLogo: row.logoMimeType !== null,
     updatedAt: row.updatedAt,
   };
@@ -40,7 +46,13 @@ export async function get(db: DbClient = prisma): Promise<CompanySettingsRecord>
 }
 
 export async function update(
-  data: { companyName: string; footerNote: string | null; refreshSeconds: number },
+  data: {
+    companyName: string;
+    footerNote: string | null;
+    refreshSeconds: number;
+    rowsPerPage: number;
+    rotationSeconds: number;
+  },
   db: DbClient = prisma,
 ): Promise<CompanySettingsRecord> {
   const row = await db.companySetting.upsert({

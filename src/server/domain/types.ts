@@ -57,6 +57,8 @@ export interface CompanySettingsRecord {
   companyName: string;
   footerNote: string | null;
   refreshSeconds: number;
+  rowsPerPage: number;
+  rotationSeconds: number;
   /** No incluye los bytes del logo: solo si existe uno. Los bytes se piden aparte (ver LogoRecord). */
   hasLogo: boolean;
   updatedAt: Date;

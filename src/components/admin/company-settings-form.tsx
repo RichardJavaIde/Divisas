@@ -5,7 +5,8 @@ import { useActionState, useEffect, useRef } from "react";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/text-field";
-import { MAX_REFRESH_SECONDS, MIN_REFRESH_SECONDS } from "@/lib/display";
+import { 
+  MAX_ROTATION_SECONDS, MAX_ROWS_PER_PAGE, MIN_ROTATION_SECONDS, MIN_ROWS_PER_PAGE,MAX_REFRESH_SECONDS, MIN_REFRESH_SECONDS } from "@/lib/display";
 import { updateCompanySettingsAction } from "@/server/actions/settings.actions";
 import type { SettingsFormState, SettingsFormValues } from "@/server/validation/settings";
 
@@ -59,7 +60,33 @@ export function CompanySettingsForm({ initial }: { initial: SettingsFormValues }
         min={MIN_REFRESH_SECONDS}
         max={MAX_REFRESH_SECONDS}
       />
+    <div className="grid gap-5 sm:grid-cols-2">
+        <TextField
+          name="rowsPerPage"
+          label="Monedas por pantalla"
+          defaultValue={values.rowsPerPage}
+          error={errors.rowsPerPage}
+          hint={`Filas que caben en una página (${MIN_ROWS_PER_PAGE} a ${MAX_ROWS_PER_PAGE}).`}
+          required
+          type="number"
+          inputMode="numeric"
+          min={MIN_ROWS_PER_PAGE}
+          max={MAX_ROWS_PER_PAGE}
+        />
 
+        <TextField
+          name="rotationSeconds"
+          label="Segundos entre páginas"
+          defaultValue={values.rotationSeconds}
+          error={errors.rotationSeconds}
+          hint={`Solo aplica si hay más monedas que las mostradas por página (${MIN_ROTATION_SECONDS} a ${MAX_ROTATION_SECONDS}).`}
+          required
+          type="number"
+          inputMode="numeric"
+          min={MIN_ROTATION_SECONDS}
+          max={MAX_ROTATION_SECONDS}
+        />
+      </div>
       <div className="border-t border-border-subtle pt-5">
         <Button type="submit" loading={pending}>
           Guardar cambios

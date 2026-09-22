@@ -1,8 +1,20 @@
 //src/server/validation/settings.ts
 import { z } from "zod";
-import { MAX_REFRESH_SECONDS, MIN_REFRESH_SECONDS } from "@/lib/display";
+import {
+  MAX_REFRESH_SECONDS,
+  MAX_ROTATION_SECONDS,
+  MAX_ROWS_PER_PAGE,
+  MIN_REFRESH_SECONDS,
+  MIN_ROTATION_SECONDS,
+  MIN_ROWS_PER_PAGE,
+} from "@/lib/display";
 
-export type SettingsField = "companyName" | "footerNote" | "refreshSeconds";
+export type SettingsField =
+  | "companyName"
+  | "footerNote"
+  | "refreshSeconds"
+  | "rowsPerPage"
+  | "rotationSeconds";
 export type SettingsFormValues = Partial<Record<SettingsField, string>>;
 
 export interface SettingsFormState {
@@ -17,6 +29,14 @@ export interface LogoActionState {
   success?: boolean;
 }
 
+const wholeNumber = (min: number, max: number) =>
+  z
+    .string()
+    .trim()
+    .regex(/^\d+$/, "Ingresa solo números.")
+    .transform(Number)
+    .refine((value) => value >= min && value <= max, `Debe estar entre ${min} y ${max}.`);
+
 export const companySettingsSchema = z.object({
   companyName: z.string().trim().min(2, "Mínimo 2 caracteres.").max(60, "Máximo 60 caracteres."),
   footerNote: z
@@ -24,15 +44,9 @@ export const companySettingsSchema = z.object({
     .trim()
     .max(160, "Máximo 160 caracteres.")
     .transform((value) => (value === "" ? null : value)),
-  refreshSeconds: z
-    .string()
-    .trim()
-    .regex(/^\d+$/, "Ingresa solo números.")
-    .transform(Number)
-    .refine(
-      (value) => value >= MIN_REFRESH_SECONDS && value <= MAX_REFRESH_SECONDS,
-      `Debe estar entre ${MIN_REFRESH_SECONDS} y ${MAX_REFRESH_SECONDS} segundos.`,
-    ),
+  refreshSeconds: wholeNumber(MIN_REFRESH_SECONDS, MAX_REFRESH_SECONDS),
+  rowsPerPage: wholeNumber(MIN_ROWS_PER_PAGE, MAX_ROWS_PER_PAGE),
+  rotationSeconds: wholeNumber(MIN_ROTATION_SECONDS, MAX_ROTATION_SECONDS),
 });
 
 export function collectFieldErrors(error: z.ZodError): Partial<Record<SettingsField, string>> {

@@ -28,6 +28,8 @@ export function updateCompanySettings(input: {
   companyName: string;
   footerNote: string | null;
   refreshSeconds: number;
+  rowsPerPage: number;
+  rotationSeconds: number;
 }) {
   return settingsRepository.update(input);
 }

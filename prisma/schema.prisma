@@ -90,13 +90,15 @@ model RateHistory {
 // ── Configuración de la compañía (un solo registro) ─
 
 model CompanySetting {
-  id             String   @id @default("singleton")
-  companyName    String   @default("Casa de Cambio")
-  logoData       Bytes?
-  logoMimeType   String?
-  footerNote     String?
-  refreshSeconds Int      @default(30)
-  updatedAt      DateTime @updatedAt
+  id              String   @id @default("singleton")
+  companyName     String   @default("Casa de Cambio")
+  logoData        Bytes?
+  logoMimeType    String?
+  footerNote      String?
+  refreshSeconds  Int      @default(30)
+  rowsPerPage     Int      @default(12)
+  rotationSeconds Int      @default(15)
+  updatedAt       DateTime @updatedAt
 
   @@map("company_settings")
 }

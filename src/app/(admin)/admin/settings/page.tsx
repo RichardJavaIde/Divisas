@@ -32,6 +32,8 @@ export default async function SettingsPage() {
                 companyName: settings.companyName,
                 footerNote: settings.footerNote ?? "",
                 refreshSeconds: String(settings.refreshSeconds),
+                rowsPerPage: String(settings.rowsPerPage),
+                rotationSeconds: String(settings.rotationSeconds),
               }}
             />
           </div>

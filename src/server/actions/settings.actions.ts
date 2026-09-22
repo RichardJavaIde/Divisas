@@ -36,9 +36,11 @@ export async function updateCompanySettingsAction(
   await requireRole("ADMIN");
 
   const values: SettingsFormValues = {
-    companyName: text(formData, "companyName"),
+   companyName: text(formData, "companyName"),
     footerNote: text(formData, "footerNote"),
     refreshSeconds: text(formData, "refreshSeconds"),
+    rowsPerPage: text(formData, "rowsPerPage"),
+    rotationSeconds: text(formData, "rotationSeconds"),
   };
 
   const parsed = companySettingsSchema.safeParse(values);

@@ -3,9 +3,13 @@ export const DEFAULT_REFRESH_SECONDS = 30;
 export const MIN_REFRESH_SECONDS = 10;
 export const MAX_REFRESH_SECONDS = 3600;
 
-/** Máximo de filas por página. Si hay más monedas, la pantalla rota páginas. */
-export const ROWS_PER_PAGE = 12;
-export const PAGE_ROTATION_SECONDS = 15;
+export const DEFAULT_ROWS_PER_PAGE = 12;
+export const MIN_ROWS_PER_PAGE = 3;
+export const MAX_ROWS_PER_PAGE = 20;
+
+export const DEFAULT_ROTATION_SECONDS = 15;
+export const MIN_ROTATION_SECONDS = 5;
+export const MAX_ROTATION_SECONDS = 120;
 
 /** Lo que el servidor entrega a la pantalla, ya formateado. */
 export interface DisplayCurrency {
@@ -25,6 +29,8 @@ export interface DisplayData {
   logoUrl: string | null;
   footerNote: string | null;
   refreshSeconds: number;
+  rowsPerPage: number;
+  rotationSeconds: number;
   timeZone: string | null;
   ratesUpdatedText: string | null;
   generatedAt: string; // ISO
@@ -36,6 +42,16 @@ export function clampRefreshSeconds(value: number): number {
   return Math.min(MAX_REFRESH_SECONDS, Math.max(MIN_REFRESH_SECONDS, Math.round(value)));
 }
 
+export function clampRowsPerPage(value: number): number {
+  if (!Number.isFinite(value)) return DEFAULT_ROWS_PER_PAGE;
+  return Math.min(MAX_ROWS_PER_PAGE, Math.max(MIN_ROWS_PER_PAGE, Math.round(value)));
+}
+
+export function clampRotationSeconds(value: number): number {
+  if (!Number.isFinite(value)) return DEFAULT_ROTATION_SECONDS;
+  return Math.min(MAX_ROTATION_SECONDS, Math.max(MIN_ROTATION_SECONDS, Math.round(value)));
+}
+
 /** Validación mínima: descarta respuestas que no sean de nuestra API (por ejemplo, un portal cautivo). */
 export function isDisplayData(value: unknown): value is DisplayData {
   if (typeof value !== "object" || value === null) return false;
@@ -44,6 +60,8 @@ export function isDisplayData(value: unknown): value is DisplayData {
     typeof v.companyName === "string" &&
     typeof v.generatedAt === "string" &&
     typeof v.refreshSeconds === "number" &&
+    typeof v.rowsPerPage === "number" &&
+    typeof v.rotationSeconds === "number" &&
     Array.isArray(v.currencies)
   );
 }
@@ -72,8 +90,9 @@ export function diffRates(previous: DisplayCurrency[], next: DisplayCurrency[]):
 // ── Páginas ─────────────────────────────────────────
 
 /** Reparte las monedas en páginas equilibradas (13 → 7 + 6, no 12 + 1). */
-export function paginate(total: number, maxPerPage = ROWS_PER_PAGE) {
-  const pageCount = Math.max(1, Math.ceil(total / maxPerPage));
+export function paginate(total: number, maxPerPage: number = DEFAULT_ROWS_PER_PAGE) {
+  const perPageLimit = Math.max(1, maxPerPage);
+  const pageCount = Math.max(1, Math.ceil(total / perPageLimit));
   const perPage = Math.max(1, Math.ceil(total / pageCount));
   return { pageCount, perPage };
 }
@@ -88,10 +107,15 @@ export interface RowMetrics {
 }
 
 const BASE_METRICS = [
+  { maxRows: 4, flag: 10.0, code: 7.0, name: 3.2, rate: 10.0 },
   { maxRows: 6, flag: 8.5, code: 6.2, name: 2.8, rate: 8.5 },
   { maxRows: 8, flag: 7.5, code: 5.6, name: 2.6, rate: 7.6 },
   { maxRows: 10, flag: 6.5, code: 5.0, name: 2.4, rate: 6.8 },
   { maxRows: 12, flag: 5.5, code: 4.4, name: 2.2, rate: 6.0 },
+  { maxRows: 14, flag: 4.8, code: 3.9, name: 2.0, rate: 5.3 },
+  { maxRows: 16, flag: 4.2, code: 3.5, name: 1.8, rate: 4.7 },
+  { maxRows: 18, flag: 3.7, code: 3.1, name: 1.6, rate: 4.2 },
+  { maxRows: 20, flag: 3.3, code: 2.8, name: 1.5, rate: 3.8 },
 ] as const;
 
 /** Ancho útil de la columna de tasas (en u) y ancho aproximado de un carácter en negrita (en em). */
@@ -99,7 +123,7 @@ const RATE_TEXT_WIDTH = 24;
 const CHAR_WIDTH = 0.64;
 
 export function getRowMetrics(rows: number, longestRateChars: number): RowMetrics {
-  const base = BASE_METRICS.find((metrics) => rows <= metrics.maxRows) ?? BASE_METRICS[3];
+  const base = BASE_METRICS.find((metrics) => rows <= metrics.maxRows) ?? BASE_METRICS[BASE_METRICS.length - 1];
   const fit = RATE_TEXT_WIDTH / (Math.max(longestRateChars, 1) * CHAR_WIDTH);
   return { flag: base.flag, code: base.code, name: base.name, rate: Math.min(base.rate, fit) };
 }
