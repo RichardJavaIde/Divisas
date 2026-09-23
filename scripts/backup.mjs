@@ -12,6 +12,7 @@ function timestamp() {
   return new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
 }
 
+
 function main() {
   if (!existsSync(DB_PATH)) {
     console.error(`✘ No se encontró la base de datos en ${DB_PATH}`);
