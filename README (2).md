@@ -569,3 +569,126 @@ Registro de lo realizado en cada etapa. Se agrega una entrada al terminar cada u
 ---
 
 **Proyecto completo.** Las 10 etapas están implementadas y verificadas. El sistema está listo para desplegarse en producción siguiendo la guía de la [sección 12](#12-despliegue).
+
+Paso 1: Confirmar que estás en la rama correcta
+powershell
+git branch
+
+Debe marcar * vercel-test. Si tienes cambios sin confirmar (por los scripts nuevos), guárdalos:
+
+powershell
+git add .
+git commit -m "Scripts de migración de datos, esquema PostgreSQL"
+git push -u origin vercel-test
+
+Si es la primera vez que subes esta rama, git push -u origin vercel-test la crea también en GitHub.
+
+Paso 2: Conectar el repositorio en Vercel (si no lo habías hecho)
+
+Si ya tenías el proyecto importado en Vercel de cuando lo probamos antes, salta al Paso 3.
+
+Si no:
+
+Entra a vercel.com, inicia sesión con GitHub.
+Add New → Project → elige tu repositorio exchange-system.
+El framework se detecta solo como Next.js. No pulses "Deploy" todavía: primero configura las variables de entorno.
+Paso 3: Variables de entorno en Vercel
+
+Ve a Settings → Environment Variables del proyecto (o, si estás en la pantalla de importación, en la sección "Environment Variables" antes de desplegar). Agrega:
+
+Nombre	Valor
+DATABASE_URL	La cadena de Neon con pooling (host con -pooler), agregando &pgbouncer=true al final
+DIRECT_URL	La cadena de Neon sin pooling (la misma que usaste para importar)
+APP_TIMEZONE	Tu zona horaria, por ejemplo America/Santo_Domingo
+
+Para conseguir la cadena "con pooling": en el panel de Neon, botón Connect, activa el interruptor Pooled connection, copia esa versión (el host contendrá algo como ep-xxx-pooler.us-east-2.aws.neon.tech) y agrégale &pgbouncer=true al final de la URL.
+
+No agregues SEED_ADMIN_USERNAME, SEED_ADMIN_PASSWORD ni SESSION_COOKIE_SECURE (tus datos reales ya están en Neon, y Vercel siempre sirve por HTTPS).
+
+Paso 4: Definir la rama de producción
+
+Si el proyecto ya existía en Vercel apuntando a master:
+
+Settings → Environments → Production → Branch Tracking (en interfaces algo más antiguas: Settings → Git → Production Branch) → cambia a vercel-test.
+
+Si es la primera vez que importas el proyecto, Vercel usará la rama que tengas seleccionada como predeterminada al importar; asegúrate de elegir vercel-test ahí, o cámbiala después con el mismo paso de arriba.
+
+Paso 5: Desplegar
+Si el proyecto ya existía: Deployments → ⋯ (en el último deployment) → Redeploy.
+Si es nuevo: pulsa Deploy.
+
+El script de build (prisma db push --skip-generate && next build) sincroniza el esquema en Neon (ya está igual, así que no debería cambiar nada) y compila la aplicación.
+
+Paso 6: Verificar en línea
+
+Abre la URL que te da Vercel (https://tu-proyecto.vercel.app o el dominio que hayas configurado):
+
+/ → debe mostrar tus monedas reales (las 9 que tenías), con sus tasas actuales, no las de ejemplo.
+/login → entra con tu usuario y contraseña reales (las mismas de siempre, porque se copió el hash).
+/admin → confirma que el dashboard muestra tus datos correctos.
+/admin/settings → confirma que tu logo (si tenías uno) y tu configuración se ven igual.
+/admin/history → confirma que todo tu historial de cambios está presente.
+Cambia una tasa desde el panel en línea y confirma que / la refleja tras el ciclo de actualización.
+Si el build falla
+Síntoma	Causa probable
+Environment variable not found: DIRECT_URL	Falta esa variable en Vercel
+Can't reach database server	Revisa que copiaste bien la cadena "con pooling" y que tiene &pgbouncer=true
+Build pasa pero / da error 500	Ve a Deployments → (el deployment) → Runtime Logs y pégame el error tal cual
+Login funciona pero /admin regresa a /login	Verifica que estás entrando por https://, no por una URL http
+
+----
+
+Es esperado: la rama vercel-test tiene el esquema apuntando a postgresql, pero tu archivo .env local todavía tiene DATABASE_URL="file:../data/exchange.db" (el de SQLite), porque ese archivo no se sube a git y se queda igual al cambiar de rama.
+
+No es un error del despliegue, es solo que no puedes correr vercel-test en local sin darle una URL de Postgres. Tienes dos formas de solucionarlo, según qué quieras hacer.
+
+Opción A: Solo quieres desplegar (no necesitas correr vercel-test en local)
+
+No hace falta arreglar nada. Vuelve a master para seguir trabajando en local con SQLite, y deja que el despliegue en Vercel use las variables de entorno que configuraste ahí (que si son la Neon correctas):
+
+powershell
+git checkout master
+npx prisma generate
+npm run dev
+
+Sigue con el Paso 5 y 6 de la guía anterior (Redeploy / verificar en línea). Vercel no usa tu .env local para nada; usa las variables que pusiste en Settings → Environment Variables.
+
+Opción B: Quieres poder probar vercel-test también en tu máquina, contra Neon
+
+Si te sirve para revisar cosas antes de desplegar, crea un archivo de entorno separado para esta rama, sin tocar tu .env de SQLite.
+
+.env.vercel-test (nuevo, agrégalo a .gitignore igual que .env)
+
+env
+DATABASE_URL="TU-CADENA-DE-NEON-CON-POOLING&pgbouncer=true"
+DIRECT_URL="TU-CADENA-DE-NEON-SIN-POOLING"
+APP_TIMEZONE="America/Santo_Domingo"
+
+En .gitignore, confirma que la línea .env* ya cubre este archivo nuevo (debería, ya que empieza con .env).
+
+Para correrlo así, en PowerShell:
+
+powershell
+git checkout vercel-test
+npx prisma generate
+
+Copy-Item .env.vercel-test .env -Force
+npm run dev
+
+Cuando termines de probar y quieras volver a trabajar en master con SQLite:
+
+powershell
+git checkout master
+# Restaura tu .env original con la línea de SQLite (file:../data/exchange.db)
+npx prisma generate
+
+Cuidado: Copy-Item .env.vercel-test .env -Force sobrescribe tu .env de SQLite. Antes de hacerlo la primera vez, guarda una copia:
+
+powershell
+Copy-Item .env .env.sqlite-backup
+
+Así puedes restaurarlo con Copy-Item .env.sqlite-backup .env -Force cuando vuelvas a master.
+
+Mi recomendación
+
+Como ya verificaste que los datos están bien en Neon (pestaña Tables), no necesitas correr vercel-test en local para nada más. Usa la Opción A: vuelve a master, sigue desarrollando ahí con SQLite como siempre, y deja que Vercel construya y sirva vercel-test con sus propias variables de entorno en la nube.
